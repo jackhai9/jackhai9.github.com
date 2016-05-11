@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android之ContentProvider | 李振海&#39;s Blog</title>
+  <meta name="author" content="李振海">
+  
+  <meta name="description" content="李振海de博客">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Android之ContentProvider"/>
+  <meta property="og:site_name" content="李振海&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="李振海&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56567610-1']);
+  
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe5f997a31fb87652c76a3a8cdb3e4cf2' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">李振海&#39;s Blog</a></h1>
+  <h2><a href="/">Do one thing and do it well.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-11-17T08:39:27.000Z"><a href="/2014/11/17/Android之ContentProvider/">Nov 17 2014</a></time>
+      
+      
+  
+    <h1 class="title">Android之ContentProvider</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="一、ContentProvider"><a href="#一、ContentProvider" class="headerlink" title="一、ContentProvider"></a>一、ContentProvider</h2><p>Android官方指出的数据存储方式总共有五种，分别是：Shared Preferences、网络存储、文件存储、外储存储、SQLite。当应用继承ContentProvider类，并重写该类用于提供数据和存储数据的方法，就可以向其他应用共享其数据。虽然使用其他方法也可以对外共享数据，但数据访问方式会因数据存储的方式而不同，如：采用文件方式对外共享数据，需要进行文件操作读写数据；采用sharedpreferences共享数据，需要使用sharedpreferences API读写数据。而使用ContentProvider共享数据的好处是统一了数据访问方式。<br><a id="more"></a> </p>
+<p>回顾一下Android中数据存储的方式有很多种：<br>(1) SharePreferences通过api进行get、put操作   —-进程内部使用，可以实现资源共享，局限性比较大<br>可以参考：<a href="http://blog.csdn.net/shift_wwx/article/details/9243109" target="_blank" rel="external">SharedPreference实现不同进程间的数据共享</a><br>(2) 通过file进行一些输入输出流控制   —-能实现进程间的共享，但是使用比较麻烦，个人不太喜欢用<br>(3) 通过SQLite进行数据库的读写   —-进程内部使用，可以实现资源共享，局限性比较大<br>(4) ContentProvider 进行数据的存储   —-可以实现进程间的共享，可以和SQLite配合使用(当然也可以用其他几个存储方式，稍后补充上实例)，一般实现的是大型数据操作<br>(5) 网络存储数据  —-比较麻烦，有局限性<br>(6) system.prop 也可以进行简单的数据存储    —-有局限性，有default值，可以临时修改，重启后就会恢复默认值或重新设置</p>
+<p><strong>使用ContentProvider共享数据的好处是统一了数据访问方式，可以存储一些图片等的数据。而其他的访问方式是有局限性的。</strong><br><a href="http://blog.csdn.net/shift_wwx/article/details/24350781" target="_blank" rel="external">参考这里</a></p>
+<h2 id="二、Uri类简介"><a href="#二、Uri类简介" class="headerlink" title="二、Uri类简介"></a>二、Uri类简介</h2><p>Uri代表了要操作的数据，Uri主要包含了两部分信息：</p>
+<p>1.需要操作的ContentProvider<br>2.对ContentProvider中的什么数据进行操作</p>
+<p>一个Uri由以下几部分组成：</p>
+<pre><code>1.scheme：ContentProvider（内容提供者）的scheme已经由Android所规定为：content://。
+2.主机名（或Authority）：用于唯一标识这个ContentProvider，外部调用者可以根据这个标识来找到它。
+3.路径（path）：可以用来表示我们要操作的数据，路径的构建应根据业务而定，如下：
+  • 要操作contact表中id为10的记录，可以构建这样的路径:/contact/10
+  • 要操作contact表中id为10的记录的name字段， contact/10/name
+  • 要操作contact表中的所有记录，可以构建这样的路径:/contact
+  要操作的数据不一定来自数据库，也可以是文件等其他存储方式，如下:
+    要操作xml文件中contact节点下的name节点，可以构建这样的路径：/contact/name
+</code></pre><p>如果要把一个字符串转换成Uri，可以使用Uri类中的parse()方法，如下：</p>
+<pre><code>Uri uri = Uri.parse(&quot;content://com.changcheng.provider.contactprovider/contact&quot;)
+</code></pre><h2 id="三、UriMatcher、ContentUrist和ContentResolver简介"><a href="#三、UriMatcher、ContentUrist和ContentResolver简介" class="headerlink" title="三、UriMatcher、ContentUrist和ContentResolver简介"></a>三、UriMatcher、ContentUrist和ContentResolver简介</h2><p>因为Uri代表了要操作的数据，所以我们经常需要解析Uri，并从Uri中获取数据。Android系统提供了两个用于操作Uri的工具类，分别为UriMatcher和ContentUris。掌握它们的使用，会便于我们的开发工作。<br>UriMatcher：用于匹配Uri，它的用法如下：</p>
+<pre><code>1.首先把你需要匹配Uri路径全部给注册上，如下：
+//常量UriMatcher.NO_MATCH表示不匹配任何路径的返回码(-1)。
+UriMatcher  uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+//如果match()方法匹配content://com.changcheng.sqlite.provider.contactprovider/contact路径，返回匹配码为1
+uriMatcher.addURI(“com.changcheng.sqlite.provider.contactprovider”, “contact”, 1);//添加需要匹配uri，如果匹配就会返回匹配码
+
+//如果match()方法匹配content://com.changcheng.sqlite.provider.contactprovider/contact/230路径，返回匹配码为2
+uriMatcher.addURI(“com.changcheng.sqlite.provider.contactprovider”, “contact/#”, 2);//#号为通配符
+
+2.注册完需要匹配的Uri后，就可以使用uriMatcher.match(uri)方法对输入的Uri进行匹配，如果匹配就返回匹配码，匹配码是调用addURI()方法传入的第三个参数，
+假设匹配content://com.changcheng.sqlite.provider.contactprovider/contact路径，返回的匹配码为1。
+</code></pre><p>ContentUris：用于获取Uri路径后面的ID部分，它有两个比较实用的方法：</p>
+<ul>
+<li>withAppendedId(uri, id)用于为路径加上ID部分</li>
+<li>parseId(uri)方法用于从路径中获取ID部分</li>
+</ul>
+<p>ContentResolver：当外部应用需要对ContentProvider中的数据进行添加、删除、修改和查询操作时，可以使用ContentResolver类来完成，要获取ContentResolver对象，可以使用Activity提供的getContentResolver()方法。 ContentResolver使用insert、delete、update、query方法来操作数据。</p>
+<h2 id="四、详细图解"><a href="#四、详细图解" class="headerlink" title="四、详细图解"></a>四、详细图解</h2><p> ~ ~这下你能看懂了吧！~ ~</p>
+<p>1、<img src="http://jackhai.qiniudn.com/1.png" alt=""></p>
+<p>2、<img src="http://jackhai.qiniudn.com/2.png" alt=""></p>
+<p>3、<img src="http://jackhai.qiniudn.com/3.png" alt=""></p>
+<p>4、<img src="http://jackhai.qiniudn.com/4_总结.png" alt=""></p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Android/">Android</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/Uri/">Uri</a>, <a href="/tags/ContentProvider/">ContentProvider</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<nav id="pagination" >
+    
+    <a href="/2014/11/20/加装SSD-重装MSDN英文版win7系统/" class="alignleft prev" >上一页</a>
+    
+    
+    <a href="/2014/11/09/Android异步消息机制完全解析/" class="alignright next" >下一页</a>
+    
+    <div class="clearfix"></div>
+</nav>
+
+<section id="comment">
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="/2014/11/17/Android之ContentProvider/" data-title="Android之ContentProvider" data-url="http://yoursite.com/2014/11/17/Android之ContentProvider/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"jackhai"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:yoursite.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/categories/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/gitcafe/">gitcafe</a><small>1</small></li>
+  
+    <li><a href="/categories/转载/">转载</a><small>2</small></li>
+  
+    <li><a href="/categories/随记/">随记</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/tags/ContentProvider/">ContentProvider</a><small>1</small></li>
+  
+    <li><a href="/tags/Handler/">Handler</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/ListView/">ListView</a><small>1</small></li>
+  
+    <li><a href="/tags/Looper/">Looper</a><small>1</small></li>
+  
+    <li><a href="/tags/Message/">Message</a><small>1</small></li>
+  
+    <li><a href="/tags/MessageQueue/">MessageQueue</a><small>1</small></li>
+  
+    <li><a href="/tags/SSD/">SSD</a><small>1</small></li>
+  
+    <li><a href="/tags/Shelves-app/">Shelves app</a><small>1</small></li>
+  
+    <li><a href="/tags/Uri/">Uri</a><small>1</small></li>
+  
+    <li><a href="/tags/异步消息/">异步消息</a><small>1</small></li>
+  
+    <li><a href="/tags/文章/">文章</a><small>1</small></li>
+  
+    <li><a href="/tags/读书/">读书</a><small>1</small></li>
+  
+    <li><a href="/tags/重装系统/">重装系统</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://jackhai.diandian.com/" title="点点">点点</a></li>
+<li><a href="http://jackhai6.lofter.com/" title=">Lofter">Lofter以前</a></li>
+<li><a href="http://jackhai789.lofter.com/" title="Lofter">Lofter现在</a></li>
+<li><a href="http://www.cnblogs.com/jackhai9/" title="博客园">博客园</a></li>
+<li><a href="http://www.u148.net/u/167902" title="U148">U148</a></li>
+<li><a href="http://jackhai.wordpress.com/" title="WordPress">WordPress</a></li>
+<li><a href="http://jackhai9.blogspot.com/" title="Blogger">Blogger</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 李振海
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

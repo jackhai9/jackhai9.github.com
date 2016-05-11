@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>转投Hexo--使用Hexo在GitHub写博客 | 李振海&#39;s Blog</title>
+  <meta name="author" content="李振海">
+  
+  <meta name="description" content="李振海de博客">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="转投Hexo--使用Hexo在GitHub写博客"/>
+  <meta property="og:site_name" content="李振海&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="李振海&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56567610-1']);
+  
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe5f997a31fb87652c76a3a8cdb3e4cf2' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">李振海&#39;s Blog</a></h1>
+  <h2><a href="/">Do one thing and do it well.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-11-06T10:50:40.000Z"><a href="/2014/11/06/转投hexo-使用hexo在github写博客/">Nov 6 2014</a></time>
+      
+      
+  
+    <h1 class="title">转投Hexo--使用Hexo在GitHub写博客</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>之前自搭<a href="http://jackhai.wordpress.com/" target="_blank" rel="external">WordPress</a>和Jekyll，感觉不够geek，虽然第一次用Jekyll的时候感觉cool毙了(累觉不爱)。更早之前使用<a href="http://jackhai.diandian.com/" target="_blank" rel="external">点点</a>、<a href="http://blog.sina.com.cn/u/2483023881" target="_blank" rel="external">新浪博客</a>、<a href="http://www.cnblogs.com/jackhai9/" target="_blank" rel="external">cnblogs</a>、<a href="http://jackhai9.blogspot.com/" target="_blank" rel="external">bloger</a>都只是浅尝辄止，现在还记得使用Windows Live Writer写新浪博客和博客园时那种惊艳的感觉。之后就把大部分东西都整理到个人笔记上了，用过有道、<a href="https://note.wiz.cn/i/57dec783" target="_blank" rel="external">为知</a>、Evernote，现在主力是为知，不怎么用印象，毕竟为知跟Chrome的组合已经让我习惯了，懒得换了。。<br><a id="more"></a></p>
+<h1 id="Hexo"><a href="#Hexo" class="headerlink" title="Hexo"></a>Hexo</h1><p>我只能说，这是个B格极高的程序猿写作方式，正合我意。如果你也纠结于要去哪里写博客，那就来GitHub吧，你懂得。</p>
+<p>hexo出自台湾大学生<a href="https://twitter.com/tommy351" target="_blank" rel="external">tommy351</a>之手，是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。先看看tommy是如何吐槽Octopress的 →＿→<a href="http://zespia.tw/blog/2012/10/11/hexo-debut/" target="_blank" rel="external">Hexo 颯爽登場！</a></p>
+<ul>
+<li>如果你对默认配置满意，只需几个命令便可秒搭一个hexo</li>
+<li>如果你跟我一样喜欢折腾下，30分钟也足够个性化。</li>
+<li>如果你过于喜欢折腾，可以折腾个把星期，尽情的玩。</li>
+</ul>
+<p>搭建过程你或许觉得有那么点小繁琐(其实只需要几个简单命令)，但一旦搭建完成，写文章是极简单，极舒服的。怎么个舒服法？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo n  #开写</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo g  #生成</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo d  #部署，可与hexo g合并为hexo d -g</span><br></pre></td></tr></table></figure>
+<h3 id="安装和使用-Windows下-："><a href="#安装和使用-Windows下-：" class="headerlink" title="安装和使用(Windows下)："></a>安装和使用(Windows下)：</h3><p>###一、准备工作</p>
+<ol>
+<li>安装Node.js，安装Git，还需要GitHub账号。</li>
+<li>建立与你的GitHub用户名对应的仓库，仓库名必须为『your_user_name.github.com』，添加SSH公钥 <a href="https://help.github.com/articles/generating-ssh-keys/" target="_blank" rel="external">这是方法</a>。</li>
+<li>以上完成后，使用 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br><span class="line">``` 验证是否成功。如出现Error: Permission denied (publickey)，则[点这里](https://help.github.com/articles/error-permission-denied-publickey/)。</span><br><span class="line"></span><br><span class="line">###二、安装及初始化</span><br><span class="line"></span><br><span class="line">1. 在nodejs安装目录下使用cmd命令安装Hexo：</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>npm install -g hexo<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. 在你喜欢的地方新建一个目录，用来初始化你的博客和存放你以后的文章。</span><br><span class="line">3. 进入你新建的目录(以后的命令基本上都在这个目录下执行)，打开cmd：</span><br></pre></td></tr></table></figure></p>
+<p>hexo init<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">好啦，至此，全部安装工作已经完成！</span><br><span class="line"></span><br><span class="line">###三、本地启动,预览下</span><br><span class="line"></span><br><span class="line">1. 生成静态页面：</span><br></pre></td></tr></table></figure></p>
+<p>hexo generate<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2. 本地启动：</span><br></pre></td></tr></table></figure></p>
+<p>hexo server<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">浏览器输入[http://localhost:4000](http://localhost:4000)就可以看到效果。</span><br><span class="line"></span><br><span class="line">###四、写文章</span><br><span class="line"></span><br><span class="line">1. 新建文章</span><br></pre></td></tr></table></figure></p>
+<p>hexo new [layout] “postName”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">执行new命令后，生成指定名称的文章至hexo\source\_posts\postName.md。</span><br><span class="line"></span><br><span class="line">2. 用你喜欢的编辑器打开文件 hexo\source\_posts\postName.md 开始尽情书写吧。。。关于markdown语法，可以参考[这里](http://wowubuntu.com/markdown/)。</span><br><span class="line"></span><br><span class="line">3. 写完后，</span><br></pre></td></tr></table></figure></p>
+<p>hexo server<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">，然后访问[localhost:4000](localhost:4000)预览效果。(退出server用Ctrl+c)。然后</span><br></pre></td></tr></table></figure></p>
+<p>hexo deploy<br>```<br>同步到github。访问网站看看效果。 关于deploy，可以参考<a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">这里</a>。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/Hexo/">Hexo</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/Hexo/">Hexo</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<nav id="pagination" >
+    
+    <a href="/2014/11/06/读书/" class="alignleft prev" >上一页</a>
+    
+    
+    <div class="clearfix"></div>
+</nav>
+
+<section id="comment">
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="/2014/11/06/转投hexo-使用hexo在github写博客/" data-title="转投Hexo--使用Hexo在GitHub写博客" data-url="http://yoursite.com/2014/11/06/转投hexo-使用hexo在github写博客/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"jackhai"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:yoursite.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/categories/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/gitcafe/">gitcafe</a><small>1</small></li>
+  
+    <li><a href="/categories/转载/">转载</a><small>2</small></li>
+  
+    <li><a href="/categories/随记/">随记</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/tags/ContentProvider/">ContentProvider</a><small>1</small></li>
+  
+    <li><a href="/tags/Handler/">Handler</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/ListView/">ListView</a><small>1</small></li>
+  
+    <li><a href="/tags/Looper/">Looper</a><small>1</small></li>
+  
+    <li><a href="/tags/Message/">Message</a><small>1</small></li>
+  
+    <li><a href="/tags/MessageQueue/">MessageQueue</a><small>1</small></li>
+  
+    <li><a href="/tags/SSD/">SSD</a><small>1</small></li>
+  
+    <li><a href="/tags/Shelves-app/">Shelves app</a><small>1</small></li>
+  
+    <li><a href="/tags/Uri/">Uri</a><small>1</small></li>
+  
+    <li><a href="/tags/异步消息/">异步消息</a><small>1</small></li>
+  
+    <li><a href="/tags/文章/">文章</a><small>1</small></li>
+  
+    <li><a href="/tags/读书/">读书</a><small>1</small></li>
+  
+    <li><a href="/tags/重装系统/">重装系统</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://jackhai.diandian.com/" title="点点">点点</a></li>
+<li><a href="http://jackhai6.lofter.com/" title=">Lofter">Lofter以前</a></li>
+<li><a href="http://jackhai789.lofter.com/" title="Lofter">Lofter现在</a></li>
+<li><a href="http://www.cnblogs.com/jackhai9/" title="博客园">博客园</a></li>
+<li><a href="http://www.u148.net/u/167902" title="U148">U148</a></li>
+<li><a href="http://jackhai.wordpress.com/" title="WordPress">WordPress</a></li>
+<li><a href="http://jackhai9.blogspot.com/" title="Blogger">Blogger</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 李振海
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

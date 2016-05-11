@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用gitcafe同步github | 李振海&#39;s Blog</title>
+  <meta name="author" content="李振海">
+  
+  <meta name="description" content="李振海de博客">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用gitcafe同步github"/>
+  <meta property="og:site_name" content="李振海&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="李振海&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56567610-1']);
+  
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe5f997a31fb87652c76a3a8cdb3e4cf2' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">李振海&#39;s Blog</a></h1>
+  <h2><a href="/">Do one thing and do it well.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-11-21T11:50:53.000Z"><a href="/2014/11/21/使用gitcafe同步github/">Nov 21 2014</a></time>
+      
+      
+  
+    <h1 class="title">使用gitcafe同步github</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>从监控宝和百度统计来看，我github上搭建的blog访问还是慢，在gitcafe上搞个备份。</p>
+<p>有点复杂，记录下步骤，防止遗忘：</p>
+<p>1.在<a href="https://gitcafe.com/" target="_blank" rel="external">gitcafe</a>注册账号、创建同名项目等步骤，同github一样，<a href="http://jackhai9.github.io/2014/11/06/转投hexo-使用hexo在github写博客/" target="_blank" rel="external">见此</a>。</p>
+<p><del>2.<strong>在github和gitcafe上同时上传博客的时候，不能使用相同的秘钥。</strong></del></p>
+<a id="more"></a>
+<p>cd到home目录( C:\Users\JackHai)下的.ssh目录，<br><code>ssh-keygen -t rsa -C &quot;jackhai789@gmail.com&quot;</code>  回车/回车/回车<br>以上命令执行后会在当前目录下生成id_rsa的秘钥和id_rsa.pub的公钥，把公钥内容copy到你的gitcafe账号的“SSH公钥管理”里，然后在命令行里使用命令 ssh -T git@gitcafe.com测试下，出现 “Hi jackhai9! You’ve successfully authenticated, but GitCafe does not provide shell access.”  提示，则ok了！</p>
+<p><del>这个时候回到HexoBlog目录，执行hexo g，然后upblog.bat，哈哈，同时部署到github和gitcafe，ok！good！</del></p>
+<p>注意：</p>
+<ul>
+<li><del>因为我的git不是单独安装的，我是使用的github软件里的git，在.ssh目录里有github_rsa和github_rsa.pub,我之前就是直接把github_rsa.pub这个公钥放到gitcafe里，所以会出现access denied的情况，连接不上。重新生成秘钥放到gitcafe里就ok了。</del></li>
+<li><del>因为gitcafe和github上传时要求所在的目录不一致(github是HexoBlog这个根目录，而gitcafe是.deploy目录)，所以理论上不能一键上传到两个上(需要cd切换目录)，因此我写了upblog.bat这个批处理文件，有了它，只要在HexoBlog根目录下运行<code>upblog.bat</code>这个命令就可以了。upblog.bat里面的内容是：<code>cd .deploy/ &amp;&amp; git checkout gitcafe-pages &amp;&amp; git push -u origin gitcafe-pages &amp;&amp; git checkout master &amp;&amp; cd .. &amp;&amp; hexo d</code></del></li>
+</ul>
+<h2 id="终极解决方法："><a href="#终极解决方法：" class="headerlink" title="终极解决方法："></a>终极解决方法：</h2><p><strong>思路是：先配置_config.yml文件的deploy，使得一个<code>hexo d</code>命令能把我们的项目部署到两个仓库里；再自动每次deploy完一个后，删除.deploy文件夹，再自动deploy另一个。</strong></p>
+<p>两次需要的.deploy文件夹是不一样的，可能是里面的配置有不一样的地方，所以我的解决方法是：在部署完一个后就删除掉.deploy文件夹，再重新部署，这就要求我们的_config.yml文件里对两个仓库都要进行配置，配置如下：</p>
+<pre><code>deploy:
+  type: git
+  repository: 
+    gitcafe: git@gitcafe.com:jackhai9/jackhai9.git,gitcafe-pages
+    github: git@github.com:jackhai9/jackhai9.github.com.git,master
+</code></pre><ul>
+<li>注意”:”后面的空格，还有，不要使用tab！！总之，就是在英文状态下编辑这个文件，不要使用tab，不然deploy的时候会报错！</li>
+</ul>
+<p>实现一个<code>hexo d</code>命令自动部署到两个平台，我的方法是：使用windows下的批处理bat文件，我依然使用upblog.bat这样一个名字(当然你可以随意命名)，文件内容超级简单：<code>hexo d &amp;&amp; rd .deploy &amp;&amp; hexo d</code></p>
+<p>Ok搞定！（rd 命令就是删除文件夹）</p>
+<p>既然如此，索性把<code>hexo g</code>命令也一起放入批处理中吧，实现真正的一键搞定。upblog.bat文件内容更加超级简单：<code>hexo d -g &amp;&amp; rd .deploy &amp;&amp; hexo d</code><br>这样，编辑完md文件后，直接在根目录<code>upblop.bat</code>即可！</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/gitcafe/">gitcafe</a>
+  </div>
+
+        
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<nav id="pagination" >
+    
+    <a href="/2014/11/27/Eclipse的-Unhandled-event-loop-exception问题/" class="alignleft prev" >上一页</a>
+    
+    
+    <a href="/2014/11/21/Android之ListView的性能提升/" class="alignright next" >下一页</a>
+    
+    <div class="clearfix"></div>
+</nav>
+
+<section id="comment">
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="/2014/11/21/使用gitcafe同步github/" data-title="使用gitcafe同步github" data-url="http://yoursite.com/2014/11/21/使用gitcafe同步github/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"jackhai"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:yoursite.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/categories/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/gitcafe/">gitcafe</a><small>1</small></li>
+  
+    <li><a href="/categories/转载/">转载</a><small>2</small></li>
+  
+    <li><a href="/categories/随记/">随记</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/tags/ContentProvider/">ContentProvider</a><small>1</small></li>
+  
+    <li><a href="/tags/Handler/">Handler</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/ListView/">ListView</a><small>1</small></li>
+  
+    <li><a href="/tags/Looper/">Looper</a><small>1</small></li>
+  
+    <li><a href="/tags/Message/">Message</a><small>1</small></li>
+  
+    <li><a href="/tags/MessageQueue/">MessageQueue</a><small>1</small></li>
+  
+    <li><a href="/tags/SSD/">SSD</a><small>1</small></li>
+  
+    <li><a href="/tags/Shelves-app/">Shelves app</a><small>1</small></li>
+  
+    <li><a href="/tags/Uri/">Uri</a><small>1</small></li>
+  
+    <li><a href="/tags/异步消息/">异步消息</a><small>1</small></li>
+  
+    <li><a href="/tags/文章/">文章</a><small>1</small></li>
+  
+    <li><a href="/tags/读书/">读书</a><small>1</small></li>
+  
+    <li><a href="/tags/重装系统/">重装系统</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://jackhai.diandian.com/" title="点点">点点</a></li>
+<li><a href="http://jackhai6.lofter.com/" title=">Lofter">Lofter以前</a></li>
+<li><a href="http://jackhai789.lofter.com/" title="Lofter">Lofter现在</a></li>
+<li><a href="http://www.cnblogs.com/jackhai9/" title="博客园">博客园</a></li>
+<li><a href="http://www.u148.net/u/167902" title="U148">U148</a></li>
+<li><a href="http://jackhai.wordpress.com/" title="WordPress">WordPress</a></li>
+<li><a href="http://jackhai9.blogspot.com/" title="Blogger">Blogger</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 李振海
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

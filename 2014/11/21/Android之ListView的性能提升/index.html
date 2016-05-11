@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android之ListView的性能提升 | 李振海&#39;s Blog</title>
+  <meta name="author" content="李振海">
+  
+  <meta name="description" content="李振海de博客">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Android之ListView的性能提升"/>
+  <meta property="og:site_name" content="李振海&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="李振海&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56567610-1']);
+  
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe5f997a31fb87652c76a3a8cdb3e4cf2' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">李振海&#39;s Blog</a></h1>
+  <h2><a href="/">Do one thing and do it well.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-11-21T07:10:14.000Z"><a href="/2014/11/21/Android之ListView的性能提升/">Nov 21 2014</a></time>
+      
+      
+  
+    <h1 class="title">Android之ListView的性能提升</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="ListView如何运作的？"><a href="#ListView如何运作的？" class="headerlink" title="ListView如何运作的？"></a>ListView如何运作的？</h2><p>ListView是设计应用于对<strong>可扩展性和高性能要求</strong>的地方。实际上，这就意味着ListView有以下2个要求：</p>
+<ul>
+<li>1、尽可能少的创建View；</li>
+<li>2、只是绘制和布局在屏幕上可见的子View。</li>
+</ul>
+<a id="more"></a> 
+<p>理解第一点很简单：通过布局xml文件创建View并显示是很耗时耗资源的操作。尽管布局文件已经编译打包成了二进制形式以便于更高效的语法解析，但是创建View仍然需要通过一个特殊的XML树，并实例化所有需要响应的View。</p>
+<p>ListView通过回收一些不可见的Views，通常在Android源码中称为“ScrapView(废弃的View)”来解决这个问题。这意味着开发者只需要简单的更新每行的内容而不需要针对每个单独的行的布局来创建View。</p>
+<p>为了实现第二点，在我们滑动屏幕时，ListView通过使用View回收器来增加低于或者高于当前窗口的Views，并把当前活动的Views移动到一个可回收池中。这样的话，ListView只需要在内存中保持足够多的Views去填充分配空间中的布局和一些额外的可回收Views，即使当你的Adapter有上百个items的时候，它会使用不同的方法去填充行之间的空间，从顶部或者底部等等，具体取决于窗口是如何变化的。</p>
+<p>下面这个图很直观的展示了当你按下ListView的时候发生了什么：<br><img src="http://static.oschina.net/uploads/img/201410/20142945_Uhrp.png" alt="ListView"></p>
+<p>通过上述介绍，我们已经熟悉了ListView的这种机制，让我们继续前往技巧部分。正如上述介绍的，在滑动时，ListView通过动态的创建和回收很多View，实现了尽可能地让Adapter的getView()轻量。所有的技巧都是通过多种方法让getView()更快。</p>
+<h2 id="View的回收"><a href="#View的回收" class="headerlink" title="View的回收"></a>View的回收</h2><p>当ListView每次需要在屏幕上显示新的一行的时候，会从其Adapter中调用getView()方法。众所周知，getView()方法有3个参数：行的位置， convertView以及父ViewGroup。</p>
+<p>参数convertView说穿来就是之前讲述的ScrapView。当ListView更新一行布局时，convertView是一个非空值。因此，当convertView值非空时，你仅仅需要更新内容即可，而不需要重新inflate一个新行的布局。getView()在Adapter中一般是如下的形式：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span> </span>&#123;</span><br><span class="line">	    <span class="keyword">if</span> (convertView == <span class="keyword">null</span>) &#123;</span><br><span class="line">	        convertView = mInflater.inflate(R.layout.your_layout, <span class="keyword">null</span>);</span><br><span class="line">	    &#125;</span><br><span class="line">	</span><br><span class="line">	    TextView text = (TextView) convertView.findViewById(R.id.text);</span><br><span class="line">	    text.setText(<span class="string">"Position "</span> + position);</span><br><span class="line">	</span><br><span class="line">	    <span class="keyword">return</span> convertView;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="View-Holder的使用"><a href="#View-Holder的使用" class="headerlink" title="View Holder的使用"></a>View Holder的使用</h2><p>Android很常见的一个操作就是在布局文件中找到一个内部的View。通常是使用View的findViewById()方法来实现。这个findViewById()方法在View树中，根据一个View ID，会递归的被调用来找到其子树。虽然在静态UI布局中使用findViewById()是完全正常的。但是，在滑动时，ListView调用其Adapter中的getView()是非常频繁的。findViewById()可能会影响ListView滑动时的性能，尤其是你的行布局是很复杂的时候。</p>
+<p>View Holder的模式就是减少在Adapter中getView()方法中调用findViewById()的次数。实际上，View Holder是一个轻量级的内部类，用于直接引用所有内部views。在创建View之后，你可以在每行的View存储一个标签。通过这种方法，只需要在初次创建布局的时候调用findViewById()。下面是一个使用上述方法的View Holder模板的代码示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span> </span>&#123;</span><br><span class="line">    ViewHolder holder;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (convertView == <span class="keyword">null</span>) &#123;</span><br><span class="line">        convertView = mInflater.inflate(R.layout.your_layout, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">        holder = <span class="keyword">new</span> ViewHolder();</span><br><span class="line">        holder.text = (TextView) convertView.findViewById(R.id.text);</span><br><span class="line"></span><br><span class="line">        convertView.setTag(holder);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        holder = convertView.getTag();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    holder.text.setText(<span class="string">"Position "</span> + position);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> convertView;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ViewHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> TextView text;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="异步加载"><a href="#异步加载" class="headerlink" title="异步加载"></a>异步加载</h2><p>很多时候，Android应用在ListView每行中显示一些多媒体内容，比如图片等。在Adapter中的getView()使用应用内置的图片资源还是不会出什么问题的，因为可以存储在Android的高速缓存中。但当你想动态的显示来自本地磁盘或网络的内容时（例如缩略图，简历图片等）你可能不希望直接在Adapter中的getView()加载它们，因为<strong>IO进程会阻塞UI线程</strong>。如果这样做的话，ListView就看起来非常卡顿。</p>
+<p>在一个单独的线程，如果想要运行的所有行的IO操作实现异步的话，技巧就是要做到符合ListView的回收行为。例如，如果在Adapter中的getView()中，使用AsyncTask方式去加载资料图片，在AsyncTask完成之前，你正在加载的图片View就有可能被回收用于其他地方。所以，一旦异步操作完成的同时，需要一种机制来知道相应的View有没有被回收。</p>
+<p>一个简单的方法来实现这一目标是通过附加一些标识，来标示该行与它相关的View的信息。然后，当异步操作完成的时候，检查目标行的View和标识的View是否一致。实现这一目标的方法很多。下面是实现这种方法的一个很简单的示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView,</span><br><span class="line">        ViewGroup parent)</span> </span>&#123;</span><br><span class="line">    ViewHolder holder;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    holder.position = position;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">new</span> ThumbnailTask(position, holder)</span><br><span class="line">            .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> convertView;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ThumbnailTask</span> <span class="keyword">extends</span> <span class="title">AsyncTask</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mPosition;</span><br><span class="line">    <span class="keyword">private</span> ViewHolder mHolder;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ThumbnailTask</span><span class="params">(<span class="keyword">int</span> position, ViewHolder holder)</span> </span>&#123;</span><br><span class="line">        mPosition = position;</span><br><span class="line">        mHolder = holder;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Cursor <span class="title">doInBackground</span><span class="params">(Void... arg0)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// Download bitmap here</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPostExecute</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mHolder.position == mPosition) &#123;</span><br><span class="line">            mHolder.thumbnail.setImageBitmap(bitmap);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ViewHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> ImageView thumbnail;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> position;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="人机交互知识"><a href="#人机交互知识" class="headerlink" title="人机交互知识"></a>人机交互知识</h2><p>做到在每一行异步加载很多资源，是一个高性能的ListView的必经之路。但是，在滑动屏幕时，如果你一味的在每一个getView()调用里面都去启动一个异步的操作，造成的结果就是你会浪费大量资源。因为行被频繁回收，造成大部分返回的结果会被丢弃。</p>
+<p><strong>考虑到实际的人机交互情况，在ListView适配器中，在每一行中都不应该去触发任何异步操作。也就是说，在ListView中有fling(快速滑动)操作时，启动任何异步操作都没有任何意义。一旦滚动停止或即将停止，才是开始真正显示每行的内容的时候。</strong></p>
+<p>Romain Guy写了一个很经典的应用：<a href="http://code.google.com/p/shelves/" target="_blank" rel="external">Shelves app</a>，其中有一个很好的的<a href="https://code.google.com/p/shelves/source/browse/trunk/Shelves/src/org/curiouscreature/android/shelves/activity/ShelvesActivity.java" target="_blank" rel="external">示例</a>。当GridView停止滑动时不做其他事情时，它就开始触发从而去异步加载书的封面资源。即使在滑动时，你也可以展示缓存中的内容，通过使用memory cache来平衡交互。这真是个好主意！</p>
+<h2 id="以上"><a href="#以上" class="headerlink" title="以上"></a>以上</h2><p>强烈推荐你看下Romain Guy和Adam Powell的关于ListView的<a href="https://www.youtube.com/watch?v=wDBM6wVEO70" target="_blank" rel="external">讨论</a>，里面涵盖了很多这篇文章的东西。你可以看看<a href="https://play.google.com/store/apps/details?id=org.lucasr.pattrn" target="_blank" rel="external">Pattrn</a>这个app，可以看到这里面的几个技巧是如何在应用中运用的。</p>
+<p>希望它是你在Android开发中一个很有用的参考:-)</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+  
+  <div class="tags">
+    <a href="/tags/ListView/">ListView</a>, <a href="/tags/Shelves-app/">Shelves app</a>
+  </div>
+
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<nav id="pagination" >
+    
+    <a href="/2014/11/21/使用gitcafe同步github/" class="alignleft prev" >上一页</a>
+    
+    
+    <a href="/2014/11/20/加装SSD-重装MSDN英文版win7系统/" class="alignright next" >下一页</a>
+    
+    <div class="clearfix"></div>
+</nav>
+
+<section id="comment">
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="/2014/11/21/Android之ListView的性能提升/" data-title="Android之ListView的性能提升" data-url="http://yoursite.com/2014/11/21/Android之ListView的性能提升/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"jackhai"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:yoursite.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/categories/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/gitcafe/">gitcafe</a><small>1</small></li>
+  
+    <li><a href="/categories/转载/">转载</a><small>2</small></li>
+  
+    <li><a href="/categories/随记/">随记</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Android/">Android</a><small>1</small></li>
+  
+    <li><a href="/tags/ContentProvider/">ContentProvider</a><small>1</small></li>
+  
+    <li><a href="/tags/Handler/">Handler</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/ListView/">ListView</a><small>1</small></li>
+  
+    <li><a href="/tags/Looper/">Looper</a><small>1</small></li>
+  
+    <li><a href="/tags/Message/">Message</a><small>1</small></li>
+  
+    <li><a href="/tags/MessageQueue/">MessageQueue</a><small>1</small></li>
+  
+    <li><a href="/tags/SSD/">SSD</a><small>1</small></li>
+  
+    <li><a href="/tags/Shelves-app/">Shelves app</a><small>1</small></li>
+  
+    <li><a href="/tags/Uri/">Uri</a><small>1</small></li>
+  
+    <li><a href="/tags/异步消息/">异步消息</a><small>1</small></li>
+  
+    <li><a href="/tags/文章/">文章</a><small>1</small></li>
+  
+    <li><a href="/tags/读书/">读书</a><small>1</small></li>
+  
+    <li><a href="/tags/重装系统/">重装系统</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://jackhai.diandian.com/" title="点点">点点</a></li>
+<li><a href="http://jackhai6.lofter.com/" title=">Lofter">Lofter以前</a></li>
+<li><a href="http://jackhai789.lofter.com/" title="Lofter">Lofter现在</a></li>
+<li><a href="http://www.cnblogs.com/jackhai9/" title="博客园">博客园</a></li>
+<li><a href="http://www.u148.net/u/167902" title="U148">U148</a></li>
+<li><a href="http://jackhai.wordpress.com/" title="WordPress">WordPress</a></li>
+<li><a href="http://jackhai9.blogspot.com/" title="Blogger">Blogger</a></li>
+</ul>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2016 李振海
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
